@@ -10,7 +10,7 @@ elasticsearch.url: http://elasticsearch:9200
 elasticsearch.username: "kibanaserver"
 elasticsearch.password: "kibanaserver"
 
-searchguard.basicauth.forbidden_usernames: ["kibanaserver", "kibanaro", "logstash", "admin"]
+searchguard.basicauth.forbidden_usernames: [ "kibanaserver", "logstash", "admin", "elastalert" ]
 
 #searchguard.basicauth.login.brandimage: "http://logo.png"
 #searchguard.basicauth.login.title: ""
