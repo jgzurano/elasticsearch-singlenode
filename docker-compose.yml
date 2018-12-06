@@ -1,0 +1,69 @@
+version: '3'
+services:
+  elasticsearch:
+    image: quay.io/interactar/docker-elasticsearch-kubernetes:6.2.3
+    container_name: elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    command: bash -c "chown -R elasticsearch.elasticsearch /elasticsearch && /run.sh"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/data
+      - ./elasticsearch/config/elasticsearch.yml:/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/config/sg:/elasticsearch/config/sg
+    ports:
+      - 9200:9200
+      - 9300:9300
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+    networks:
+      - elk
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash-oss:6.2.3
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5000:5000"
+    environment:
+      LS_JAVA_OPTS: "-Xmx512m -Xms512m"
+    networks:
+      - elk
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: theeye/searchguard-kibana:6.2.3
+    container_name: kibana
+    volumes:
+      - ./kibana/config/:/usr/share/kibana/config:ro
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+    depends_on:
+      - elasticsearch
+
+volumes:
+  esdata:
+
+networks:
+  elk:
+    driver: bridge
